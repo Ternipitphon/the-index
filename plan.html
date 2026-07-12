@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AgriFuture AI — แผนการปลูก</title>
+<link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<link rel="stylesheet" href="form.css">
+<link rel="stylesheet" href="result.css">
+<link rel="stylesheet" href="plan.css">
+</head>
+<body>
+
+<div class="video-bg">
+  <video autoplay loop muted playsinline>
+    <source src="video/YTDown_YouTube_Media_D2wT35xqGRQ_001_1080p.mp4" type="video/mp4">
+  </video>
+</div>
+<div class="blob blob-1"></div>
+<div class="blob blob-2"></div>
+
+<!-- ════════════════ SIDEBAR ════════════════ -->
+<aside class="sidebar" id="sidebar">
+  <div class="sidebar-logo">
+    <img src="img/logo.png" alt="AgriFuture AI">
+    <span class="logo-text">AgriFuture <span>AI</span></span>
+  </div>
+
+  <div class="sidebar-section-label">เมนู</div>
+  <nav class="nav-links">
+    <a href="Chatai.html" class="nav-link">
+      <i class="fa-solid fa-comment-dots"></i>แชท AI
+    </a>
+    <a href="costcalc.html" class="nav-link">
+      <i class="fa-solid fa-calculator"></i> คำนวณต้นทุน
+    </a>
+    <a href="plan.html" class="nav-link active">
+      <i class="fa-solid fa-map"></i> แผนการปลูก
+    </a>
+  </nav>
+
+  <div class="sidebar-section-label" style="margin-top:22px;">ข้อมูลที่เลือกไว้</div>
+  <div class="selected-mini-list" id="selectedMiniList">
+    <div class="history-empty">
+      <i class="fa-regular fa-folder-open"></i>
+      ยังไม่ได้เลือกข้อมูล
+    </div>
+  </div>
+
+  <div class="sidebar-footer">
+    <a href="form.html" class="back-btn">
+      <i class="fa-solid fa-arrow-left"></i>
+      กลับหน้าหลัก
+    </a>
+    <div style="display:flex; align-items:center; gap:6px;">
+      <a href="profile.html" class="profile-row" id="profileRow" style="flex:1; min-width:0;">
+        <div class="profile-avatar" id="profileAvatar">
+          <img id="profileImg" src="" alt="" style="display:none; width:100%; height:100%; border-radius:50%; object-fit:cover;">
+          <span id="profileInitial">U</span>
+        </div>
+        <div class="profile-info">
+          <span class="profile-name" id="profileName">ผู้ใช้งาน</span>
+          <span class="profile-role">Free</span>
+        </div>
+      </a>
+    </div>
+  </div>
+</aside>
+
+<!-- ════════════════ MAIN AREA ════════════════ -->
+<div class="chat-wrapper">
+  <header class="chat-topbar">
+    <button class="sidebar-toggle" id="sidebarToggle" aria-label="เปิด/ปิดเมนู">
+      <i class="fa-solid fa-bars"></i>
+    </button>
+    <div class="topbar-title">
+      <i class="fa-solid fa-map"></i>
+      <span>แผนการปลูก</span>
+    </div>
+  </header>
+
+  <div class="plan-page" id="planPage">
+
+    <!-- Intro -->
+    <section class="plan-section intro-card">
+      <div class="intro-text">
+        <h2>เลือกผลวิเคราะห์เพื่อวางแผนการปลูก</h2>
+        <p>ดึงข้อมูลที่ประมวลผลไว้แล้วจากหน้า Result มาให้ AI ช่วยวางแผนการปลูกแบบละเอียด ทั้งขั้นตอน ผลผลิตที่ควรได้ อุปกรณ์ ปุ๋ย และรอบการให้น้ำ</p>
+      </div>
+      <button class="add-data-btn" id="openPickerBtn">
+        <i class="fa-solid fa-plus"></i>
+        เพิ่มข้อมูลจากผลวิเคราะห์
+      </button>
+    </section>
+
+    <!-- Selected entry -->
+    <section class="plan-section" id="selectedSection" style="display:none;">
+      <div class="section-heading">
+        <h3><i class="fa-solid fa-seedling"></i> ข้อมูลที่เลือก</h3>
+        <button class="clear-btn" id="clearSelectedBtn">
+          <i class="fa-solid fa-xmark"></i> ล้างข้อมูล
+        </button>
+      </div>
+      <div class="selected-crop-card" id="selectedCropCard"></div>
+
+      <div class="plan-action">
+        <button class="plan-btn" id="planBtn">
+          <i class="fa-solid fa-wand-magic-sparkles"></i>
+          <span>วางแผน</span>
+        </button>
+      </div>
+    </section>
+
+    <!-- Empty state -->
+    <section class="plan-section" id="emptyStateSection">
+      <div class="empty-state">
+        <i class="fa-solid fa-inbox"></i>
+        <p>ยังไม่มีข้อมูล — กด "เพิ่มข้อมูลจากผลวิเคราะห์" ด้านบนเพื่อเริ่มต้น</p>
+      </div>
+    </section>
+
+    <!-- AI Plan loading -->
+    <section class="plan-section" id="planLoadingSection" style="display:none;">
+      <div class="plan-loader">
+        <div class="spinner"></div>
+        <div class="loader-text">
+          <div style="font-size:1.05rem;font-weight:600;margin-bottom:.4rem;">AI กำลังวางแผนการปลูกให้คุณ</div>
+          <div id="planLoaderMsg">กำลังประมวลผลขั้นตอน อุปกรณ์ ปุ๋ย และรอบน้ำ<span class="loader-dots"></span></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- AI Plan error -->
+    <section class="plan-section" id="planErrorSection" style="display:none;">
+      <div class="err-icon">⚠️</div>
+      <h3 style="margin-bottom:.5rem;">เกิดข้อผิดพลาดในการวางแผน</h3>
+      <p id="planErrorMsg">ไม่สามารถวางแผนการปลูกได้ กรุณาลองใหม่</p>
+    </section>
+
+    <!-- AI Plan results -->
+    <section class="plan-section" id="planResultSection" style="display:none;">
+
+      <div class="plan-card">
+        <div class="section-title">
+          <i class="fa-solid fa-clipboard-list" style="color:#7BCC3A"></i>
+          ภาพรวมแผนการปลูก
+        </div>
+        <p class="plan-overview-text" id="planOverview"></p>
+      </div>
+
+      <div class="plan-card">
+        <div class="section-title">
+          <i class="fa-solid fa-timeline" style="color:#F5C518"></i>
+          ขั้นตอนการปลูก
+        </div>
+        <div class="timeline-list" id="timelineList"></div>
+      </div>
+
+      <div class="plan-two-col">
+        <div class="plan-card">
+          <div class="section-title">
+            <i class="fa-solid fa-basket-shopping" style="color:#7BCC3A"></i>
+            ผลผลิตที่ควรเก็บได้
+          </div>
+          <div class="yield-box" id="yieldBox"></div>
+        </div>
+
+        <div class="plan-card">
+          <div class="section-title">
+            <i class="fa-solid fa-droplet" style="color:#4FA8F5"></i>
+            รอบการให้น้ำ
+          </div>
+          <div class="water-box" id="waterBox"></div>
+        </div>
+      </div>
+
+      <div class="plan-card">
+        <div class="section-title">
+          <i class="fa-solid fa-toolbox" style="color:#F5C518"></i>
+          อุปกรณ์ที่จำเป็น
+        </div>
+        <ul class="equipment-list" id="equipmentList"></ul>
+      </div>
+
+      <div class="plan-card">
+        <div class="section-title">
+          <i class="fa-solid fa-leaf" style="color:#7BCC3A"></i>
+          แผนการใส่ปุ๋ย
+        </div>
+        <div class="table-wrap">
+          <table class="fertilizer-table" id="fertilizerTable">
+            <thead>
+              <tr>
+                <th>ช่วงการเจริญเติบโต</th>
+                <th>สูตร/ชนิดปุ๋ย</th>
+                <th>ปริมาณ</th>
+                <th>หมายเหตุ</th>
+              </tr>
+            </thead>
+            <tbody id="fertilizerTableBody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="plan-card advice-card">
+        <div class="section-title">
+          <i class="fa-solid fa-comments" style="color:#7BCC3A"></i>
+          คำแนะนำปิดท้ายจาก AI
+        </div>
+        <p id="finalAdvice"></p>
+      </div>
+
+    </section>
+
+  </div>
+</div>
+
+<!-- ════════════════ RESULT PICKER MODAL ════════════════ -->
+<div class="modal-overlay" id="pickerOverlay">
+  <div class="modal-panel">
+    <div class="modal-header">
+      <h3><i class="fa-solid fa-magnifying-glass-chart"></i> เลือกข้อมูลจากผลวิเคราะห์</h3>
+      <button class="modal-close" id="closePickerBtn"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <div class="modal-body" id="pickerBody">
+      <div class="empty-state">
+        <i class="fa-solid fa-spinner fa-spin"></i>
+        <p>กำลังโหลดข้อมูล...</p>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <span class="picker-count" id="pickerCount">ยังไม่ได้เลือกข้อมูล</span>
+      <button class="confirm-add-btn" id="confirmAddBtn" disabled>
+        <i class="fa-solid fa-check"></i> ใช้ข้อมูลนี้
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Toast Notification -->
+<div class="toast" id="toast">
+  <i class="fa-solid fa-check"></i>
+  <span id="toastMsg">บันทึกแล้ว</span>
+</div>
+
+<!-- Firebase -->
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<script>
+const firebaseConfig = {
+  apiKey: "AIzaSyClThtgfsR00SuM3lgM2HOP9175b6FnkYc",
+  authDomain: "agrifuture-ai-5ade9.firebaseapp.com",
+  projectId: "agrifuture-ai-5ade9",
+  storageBucket: "agrifuture-ai-5ade9.firebasestorage.app",
+  messagingSenderId: "634181270751",
+  appId: "1:634181270751:web:2a9efbb05bd90839853d6a",
+  measurementId: "G-32C33BG9YX"
+};
+if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
+
+firebase.auth().onAuthStateChanged(user => {
+  const nameEl = document.getElementById('profileName');
+  const imgEl = document.getElementById('profileImg');
+  const initEl = document.getElementById('profileInitial');
+  if (user) {
+    const name = user.displayName || user.email?.split('@')[0] || 'ผู้ใช้';
+    nameEl.textContent = name;
+    if (user.photoURL) {
+      imgEl.src = user.photoURL;
+      imgEl.style.display = 'block';
+      initEl.style.display = 'none';
+    } else {
+      imgEl.style.display = 'none';
+      initEl.style.display = 'flex';
+      initEl.textContent = name.charAt(0).toUpperCase();
+    }
+  }
+});
+</script>
+
+<script src="plan.js"></script>
+<script src="nav-auth.js"></script>
+
+</body>
+</html>

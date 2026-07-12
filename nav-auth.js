@@ -24,9 +24,8 @@
   }
 
   function applyUI(firebaseUser) {
-    const loginBtn  = document.getElementById('login-trigger');
+    const loginBtn = document.getElementById('login-trigger');
     const navWelcome = document.querySelector('.nav-welcome');
-
     if (!loginBtn) return;
 
     if (!firebaseUser) {
@@ -39,8 +38,8 @@
     }
 
     // Logged in
-    const local     = getLocalUser(firebaseUser.email);
-    const name      = local?.name || firebaseUser.displayName || 'ผู้ใช้';
+    const local = getLocalUser(firebaseUser.email);
+    const name = local?.name || firebaseUser.displayName || 'ผู้ใช้';
     const avatarSrc = local?.avatar || firebaseUser.photoURL || defaultAvatar();
     const firstName = name.split(' ')[0];
 
@@ -53,7 +52,6 @@
       <span style="font-size:14px;font-weight:500;color:#eaaf11;">${firstName}</span>
     `;
     loginBtn.href = 'profile.html';
-
     if (navWelcome) navWelcome.textContent = `สวัสดี, ${name}`;
   }
 

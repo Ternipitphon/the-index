@@ -268,4 +268,26 @@
 
 <script type="module" src="profile.js"></script>
 </body>
-</html>
+</html><script>
+const provider = new firebase.auth.GoogleAuthProvider();
+
+function loginWithGoogle() {
+    firebase.auth().signInWithPopup(provider)
+        .then((result) => {
+            const user = result.user;
+            console.log('เข้าสู่ระบบสำเร็จ:', user.displayName, user.email);
+            // จะ redirect หรือ reload หน้าตามต้องการ
+            window.location.href = 'form.html';
+        })
+        .catch((error) => {
+            console.error('เข้าสู่ระบบไม่สำเร็จ:', error.code, error.message);
+            alert('เข้าสู่ระบบไม่สำเร็จ: ' + error.message);
+        });
+}
+
+function logout() {
+    firebase.auth().signOut().then(() => {
+        window.location.reload();
+    });
+}
+</script>

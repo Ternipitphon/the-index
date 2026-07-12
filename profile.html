@@ -10,9 +10,13 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 
-<!-- Firebase (ต้องโหลดก่อนใช้ auth) -->
-<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<!--
+  หมายเหตุ: ไม่ต้องโหลด firebase-app-compat.js / firebase-auth-compat.js ที่นี่แล้ว
+  เพราะ profile.js ใช้ Firebase SDK แบบ modular (import ... from "firebasejs/10.12.2/firebase-app.js")
+  และสร้าง auth instance ของตัวเองอยู่แล้ว การโหลด compat SDK ซ้ำจะทำให้เกิด
+  Firebase app / auth คนละตัวกันชนกัน และปุ่ม Google login จะมี event handler ซ้อนกัน 2 ชุด
+-->
+
 <link rel="stylesheet" href="profile.css">
 <link rel="stylesheet" href="result.css">
 </head>
@@ -28,7 +32,8 @@
     </div>
 
     <div class="social-wrap">
-      <button class="btn-social btn-google" id="btn-google-login" onclick="loginWithGoogle()">
+      <!-- ไม่ต้องใส่ onclick แล้ว: profile.js ผูก addEventListener('click', ...) ให้ปุ่มนี้อยู่แล้ว -->
+      <button class="btn-social btn-google" id="btn-google-login">
         <svg width="18" height="18" viewBox="0 0 48 48">
           <path fill="#EA4335" d="M24 9.5c3.5 0 6.6 1.2 9.1 3.2l6.8-6.8C35.6 2.2 30.1 0 24 0 14.6 0 6.6 5.5 2.8 13.5l7.9 6.2C12.6 13 17.9 9.5 24 9.5z"/>
           <path fill="#4285F4" d="M46.5 24.5c0-1.6-.1-3.1-.4-4.5H24v8.5h12.7c-.5 2.8-2.1 5.2-4.5 6.8l7 5.4c4.1-3.8 6.3-9.4 6.3-16.2z"/>
@@ -265,31 +270,8 @@
   </div>
 </div>
 
-<!-- Google Sign-In: ย้ายมาไว้ก่อนปิด body และก่อนโหลด profile.js -->
-<script>
-const provider = new firebase.auth.GoogleAuthProvider();
-
-function loginWithGoogle() {
-    firebase.auth().signInWithPopup(provider)
-        .then((result) => {
-            const user = result.user;
-            console.log('เข้าสู่ระบบสำเร็จ:', user.displayName, user.email);
-            // เปลี่ยนหน้าไปหลัง login สำเร็จ ปรับปลายทางได้ตามต้องการ
-            window.location.href = 'form.html';
-        })
-        .catch((error) => {
-            console.error('เข้าสู่ระบบไม่สำเร็จ:', error.code, error.message);
-            alert('เข้าสู่ระบบไม่สำเร็จ: ' + error.message);
-        });
-}
-
-function logout() {
-    firebase.auth().signOut().then(() => {
-        window.location.reload();
-    });
-}
-</script>
-
+<!-- profile.js เป็น module: import Firebase (modular SDK), ตั้ง auth, ผูก event ปุ่ม Google/email login,
+     จัดการ dashboard/สถิติ/badge ทั้งหมดในไฟล์เดียว ไม่ต้องมี script อื่นแทรกซ้อนแล้ว -->
 <script type="module" src="profile.js"></script>
 </body>
 </html>

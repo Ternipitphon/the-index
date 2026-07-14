@@ -154,4 +154,4 @@ if __name__ == '__main__':
     # ใช้ Port 5002 เพื่อไม่ให้ชนกับ app.py (5001) และ costcalc.py (สมมติว่าใช้ port อื่นอยู่แล้ว)
     # หากในเครื่องของคุณ costcalc.py ใช้ port 5002 อยู่แล้ว ให้เปลี่ยนเลข port ตรงนี้เป็นค่าอื่น
     # และแก้ไขค่า PLAN_API_PORT ในไฟล์ plan.js ให้ตรงกัน
-    app.run(host='0.0.0.0', port=5002, debug=True)
+    app.run(host='0.0.0.0', port=5000, debug=True)

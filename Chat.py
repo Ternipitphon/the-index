@@ -5,6 +5,7 @@ AgriFuture AI — Python Flask Backend (Gemini Edition)
 """
 
 import os
+import json
 import time
 from flask import Flask, jsonify, request
 from flask_cors import CORS
@@ -132,6 +133,112 @@ def handle_chat_request():
     }), 200
 
 
+def generate_plan_with_gemini(payload, retries=5, backoff_in_seconds=2):
+    """สร้างแผนการปลูกแบบละเอียด (JSON) จากข้อมูลผลวิเคราะห์ที่ plan.js ส่งมา"""
+    if not GEMINI_API_KEY:
+        raise RuntimeError(
+            "ไม่พบ GEMINI_API_KEY — กรุณาตั้งค่าในไฟล์ .env เช่น GEMINI_API_KEY=your_key_here"
+        )
+
+    crop_name       = payload.get('crop_name', '')
+    province        = payload.get('province', '')
+    district        = payload.get('district', '')
+    budget          = payload.get('budget', '')
+    area            = payload.get('area', '')
+    water_source    = payload.get('water_source', '')
+    planting_month  = payload.get('planting_month', '')
+    success_chance  = payload.get('success_chance', '')
+    success_percent = payload.get('success_percent', '')
+    estimated_income = payload.get('estimated_income', '')
+    roi_months      = payload.get('roi_months', '')
+    pros            = payload.get('pros', [])
+    cons            = payload.get('cons', [])
+    tips            = payload.get('tips', [])
+
+    prompt = f"""
+คุณคือ AI ผู้เชี่ยวชาญด้านการเกษตร ทำหน้าที่วางแผนการปลูกแบบละเอียดให้เกษตรกร
+โดยอิงจากผลการวิเคราะห์ที่มีอยู่แล้วต่อไปนี้:
+
+- พืชที่จะปลูก: {crop_name}
+- พื้นที่: อำเภอ {district} จังหวัด {province} (ขนาดพื้นที่: {area})
+- งบประมาณ: {budget} บาท
+- แหล่งน้ำ: {water_source}
+- เดือนที่เริ่มปลูก: {planting_month}
+- โอกาสสำเร็จ: {success_chance} ({success_percent}%)
+- รายได้โดยประมาณ: {estimated_income}
+- ระยะเวลาคืนทุน: {roi_months} เดือน
+- ข้อดี: {', '.join(pros) if isinstance(pros, list) else pros}
+- ข้อเสีย/ความเสี่ยง: {', '.join(cons) if isinstance(cons, list) else cons}
+- เคล็ดลับ: {', '.join(tips) if isinstance(tips, list) else tips}
+
+จงวางแผนการปลูกแบบละเอียด และตอบกลับเป็น JSON ภาษาไทยเท่านั้น ห้ามมีคำอธิบายอื่นนอกเหนือจาก JSON
+โครงสร้างต้องตรงตามตัวอย่างนี้เป๊ะๆ:
+
+{{
+  "plan_overview": "สรุปภาพรวมแผนการปลูกทั้งหมดแบบกระชับ",
+  "timeline": [
+    {{ "phase": "ชื่อขั้นตอน เช่น เตรียมดิน", "duration": "ช่วงเวลา เช่น สัปดาห์ที่ 1", "description": "รายละเอียดสิ่งที่ต้องทำ" }}
+  ],
+  "expected_yield": {{ "amount": "ตัวเลขผลผลิตที่คาดว่าจะได้", "unit": "หน่วย เช่น กก./ไร่", "note": "หมายเหตุเพิ่มเติม" }},
+  "watering_schedule": {{ "times_total": "จำนวนครั้งรวมตลอดฤดูปลูก", "frequency_per_week": "ความถี่ต่อสัปดาห์", "note": "หมายเหตุการให้น้ำ" }},
+  "equipment": ["รายการอุปกรณ์ที่จำเป็น"],
+  "fertilizer_plan": [
+    {{ "stage": "ช่วงการเจริญเติบโต", "type": "สูตร/ชนิดปุ๋ย", "amount": "ปริมาณ", "note": "หมายเหตุ" }}
+  ],
+  "final_advice": "คำแนะนำปิดท้ายจาก AI"
+}}
+"""
+
+    model = genai.GenerativeModel(
+        GEMINI_MODEL,
+        generation_config={
+            "temperature": 0.3,
+            "response_mime_type": "application/json"
+        }
+    )
+
+    for i in range(retries):
+        try:
+            response = model.generate_content(prompt)
+            raw_text = response.text.strip()
+            if raw_text.startswith("```json"):
+                raw_text = raw_text.split("```json")[1].split("```")[0].strip()
+            elif raw_text.startswith("```"):
+                raw_text = raw_text.split("```")[1].split("```")[0].strip()
+            return json.loads(raw_text)
+        except json.JSONDecodeError as e:
+            raise RuntimeError(f"AI ประมวลผลข้อมูลกลับมาคลาดเคลื่อนจากโครงสร้างมาตรฐาน: {str(e)}")
+        except Exception as e:
+            if "429" in str(e) and i < retries - 1:
+                time.sleep(backoff_in_seconds * (2 ** i))
+                continue
+            raise RuntimeError(f"เรียก Gemini API ไม่สำเร็จ: {str(e)}")
+
+
+# ── ประตูทางเข้าพอร์ตที่ 3: สำหรับหน้า plan.html ที่ยิงหา /api/plan ─────────
+@app.route('/api/plan', methods=['POST', 'OPTIONS'])
+def plan_api():
+    if request.method == 'OPTIONS':
+        return jsonify({'status': 'CORS OK'}), 200
+    try:
+        data = request.get_json() or {}
+        if not data.get('crop_name'):
+            return jsonify({'success': False, 'error': 'ไม่พบข้อมูลพืชที่จะวางแผนปลูก'}), 400
+
+        plan_data = generate_plan_with_gemini(data)
+        return jsonify({
+            'success': True,
+            'data': plan_data
+        }), 200
+
+    except RuntimeError as e:
+        print("!! Gemini /api/plan Error !! :", str(e))
+        return jsonify({'success': False, 'error': str(e)}), 503
+    except Exception as e:
+        print("!! /api/plan Error !! :", str(e))
+        return jsonify({'success': False, 'error': f'ระบบขัดข้อง: {str(e)}'}), 500
+
+
 # ── ประตูทางเข้าพอร์ตที่ 1: สำหรับหน้าเว็บที่ยิงหา /chat ─────────────────────
 @app.route('/chat', methods=['POST', 'OPTIONS'])
 def chat_api():
@@ -167,7 +274,7 @@ def analyze_api():
 def health_check():
     return jsonify({
         'status': 'online',
-        'msg': 'AgriFuture API (Gemini Edition) Dual-Ports Ready',
+        'msg': 'AgriFuture API (Gemini Edition) — /chat, /api/analyze, /api/plan Ready',
         'gemini_key_configured': bool(GEMINI_API_KEY),
         'model': GEMINI_MODEL
     })
@@ -178,6 +285,6 @@ if __name__ == '__main__':
     print(" AgriFuture AI — Backend (Gemini Edition)")
     print(f" Gemini Model : {GEMINI_MODEL}")
     print(f" API Key ตั้งค่าแล้ว : {'ใช่' if GEMINI_API_KEY else 'ไม่ — ต้องตั้งใน .env'}")
-    print(" พร้อมทำงานต้อนรับหน้าต่างเว็บทั้งช่องทาง /chat และ /api/analyze")
+    print(" พร้อมทำงานต้อนรับหน้าต่างเว็บทั้งช่องทาง /chat, /api/analyze และ /api/plan")
     print("=" * 60)
     app.run(debug=True, port=5000)

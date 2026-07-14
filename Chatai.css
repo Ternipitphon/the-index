@@ -154,6 +154,34 @@ html, body {
    comes from consistent spacing + the sidebar-section-label alone. */
 .field-divider { display: none; }
 
+/* ══════════════════════════════════════════
+   SIDEBAR NAV LINKS — shared across all feature
+   pages (Chatai.html, costcalc.html, plan.html)
+   so the three sites look and behave the same.
+   ══════════════════════════════════════════ */
+.nav-links {
+    display: flex; flex-direction: column; gap: 4px;
+    margin-bottom: 4px;
+}
+.nav-link {
+    display: flex; align-items: center; gap: 10px;
+    padding: 10px 12px;
+    border-radius: var(--radius-sm);
+    color: var(--text-muted);
+    font-size: 13.5px; font-weight: 500;
+    text-decoration: none;
+    border: 1px solid transparent;
+    transition: background .15s, color .15s, border-color .15s;
+}
+.nav-link i { color: var(--green-bright); width: 16px; text-align: center; }
+.nav-link:hover { background: var(--surface-soft); color: var(--text-white); }
+.nav-link.active {
+    background: rgba(240,184,0,0.1);
+    border-color: rgba(240,184,0,0.3);
+    color: var(--text-white);
+}
+.nav-link.active i { color: var(--yellow); }
+
 /* New Chat Button */
 .new-chat-btn {
     width: 100%;
@@ -281,6 +309,25 @@ html, body {
     display: flex; flex-direction: column; align-items: center; gap: 8px;
 }
 .history-empty i { font-size: 19px; opacity: 0.4; }
+
+/* ── Selected mini list (used by costcalc.html / plan.html sidebars) ── */
+.selected-mini-list {
+    flex: 1; overflow-y: auto;
+    display: flex; flex-direction: column; gap: 6px;
+    padding-right: 2px;
+    margin-bottom: 12px;
+}
+.selected-mini-item {
+    display: flex; align-items: center; gap: 8px;
+    padding: 8px 10px; border-radius: var(--radius-sm);
+    background: var(--surface-soft);
+    border: 1px solid var(--border-soft);
+    font-size: 12px; color: var(--text-muted);
+}
+.selected-mini-item i { color: var(--yellow); font-size: 10px; flex-shrink: 0; }
+.selected-mini-item span {
+    overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
 
 /* Sidebar Footer */
 .sidebar-footer {

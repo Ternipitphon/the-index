@@ -3,9 +3,9 @@
 // แล้วส่งให้ backend Gemini สร้างแผนการปลูกแบบละเอียด)
 // ══════════════════════════════════════════════════════════════════
 
-// ── ตั้งค่า API Base: ยิงไป Backend plan.py (แยก Port จาก app.py / costcalc.py) ──
-// หมายเหตุ: ถ้า plan.py รันอยู่คนละ Port ในเครื่องคุณ ให้แก้เลขพอร์ตด้านล่างนี้ให้ตรงกัน
-const PLAN_API_PORT = 5002;
+// ── ตั้งค่า API Base: ยิงไป Backend Chat.py (endpoint /api/plan รวมอยู่ในตัวเดียวกับ /chat และ /api/analyze) ──
+// หมายเหตุ: Chat.py รันที่พอร์ต 5000 ทั้งหมด (ไม่มีพอร์ตแยกต่างหากสำหรับ plan อีกต่อไป)
+const PLAN_API_PORT = 5000;
 const API_BASE = (
   window.location.hostname === 'localhost' ||
   window.location.hostname === '127.0.0.1'

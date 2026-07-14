@@ -2,7 +2,7 @@
    AgriFuture AI — Chat JS  v3.0
    ══════════════════════════════════════════ */
 
-const API_URL = 'http://localhost:5000/chat';
+const API_URL = 'https://the-index-d3hd.onrender.com/chat';
 const MAX_CHARS = 2000;
 
 /* ── DOM refs ── */

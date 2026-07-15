@@ -6,10 +6,11 @@
 // ── ตั้งค่า API Base: ยิงไป Backend Chat.py (endpoint /api/plan รวมอยู่ในตัวเดียวกับ /chat และ /api/analyze) ──
 // หมายเหตุ: Chat.py รันที่พอร์ต 5000 ทั้งหมด (ไม่มีพอร์ตแยกต่างหากสำหรับ plan อีกต่อไป)
 const PLAN_API_PORT = 5000;
+const PLAN_API_PROD_URL = 'https://the-index-d3hd.onrender.com'; // backend จริงบน Render (เหมือนที่ Chatai.js ใช้)
 const API_BASE = (
   window.location.hostname === 'localhost' ||
   window.location.hostname === '127.0.0.1'
-) ? `http://localhost:${PLAN_API_PORT}` : '';
+) ? `http://localhost:${PLAN_API_PORT}` : PLAN_API_PROD_URL;
 
 const USAGE_KEY = 'agrifuture_usage';
 
